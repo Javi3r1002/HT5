@@ -77,3 +77,83 @@ for i in CN:
         r = 'Es normal'
     else:
         r = 'no es normal'
+
+    plt.subplot(7,7,g+1)
+    sns.distplot(normal[i])
+    plt.xlabel(i)
+    g+= 1
+
+    print(i, ": ", r)
+
+plt.tight_layout()
+plt.show()
+
+
+
+#print(normal.describe())
+
+normal = normal.drop(['Id', 'LowQualFinSF', 'YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'FullBath', 'MoSold', 'YrSold', 'MSSubClass', 'OverallCond', 'BsmtFinSF1','BsmtFinSF2', 'BsmtUnfSF', '2ndFlrSF', 'BsmtFullBath', 'BsmtHalfBath', 'HalfBath', 'BedroomAbvGr', 'KitchenAbvGr', 'WoodDeckSF', 'EnclosedPorch','3SsnPorch', 'ScreenPorch', 'PoolArea', 'MiscVal', 'LotFrontage', 'LotArea', 'MasVnrArea', '2ndFlrSF', 'TotRmsAbvGrd', 'Fireplaces', 'OpenPorchSF' ], axis = 1)
+vif_data = pd.DataFrame() 
+G = normal
+vif_data["feature"] = G.columns
+  
+vif_data["VIF"] = [variance_inflation_factor(G.values, i) 
+                          for i in range(len(G.columns))] 
+  
+print(vif_data)
+correlation_mat = normal.corr()
+NC = normal.columns.values
+
+SP = correlation_mat.iloc[-1]
+
+SaleP = normal[['SalePrice']]
+
+
+sns.heatmap(correlation_mat, annot = True)
+plt.tight_layout()
+plt.show()
+#normal = normal.drop(['1stFlrSF', 'OverallQual', 'GarageCars'], axis = 1)
+
+CN = normal.columns.values
+
+H = normal
+X = np.array(normal)
+X.shape
+print('Hopkins', pyclustertend.hopkins(X,len(X)))
+
+
+
+random.seed(5)
+
+km = cluster.KMeans(n_clusters=3, random_state = 5).fit(X)
+centroides = km.cluster_centers_
+#print(centroides)
+
+
+normal = km.predict(X)
+plt.scatter(X[normal == 0, -1], X[normal == 0, -1],s=100,c='red', label = "Cluster 1")
+Cluster_bajo = X[normal == 0, -1]
+Cluster_bajo = Cluster_bajo.tolist()
+print('máximo primer cluster (rojo)', max(Cluster_bajo))
+print('mínimo primer cluster (rojo)',min(Cluster_bajo))
+Barato = H[((H['SalePrice']>(min(Cluster_bajo)))& (H['SalePrice']<max(Cluster_bajo)))]
+
+plt.scatter(X[normal == 1, -1], X[normal == 1, -1],s=100,c='blue', label = "Cluster 2")
+Cluster_medio = X[normal == 1, -1]
+Cluster_medio = Cluster_medio.tolist()
+print('máximo segundo cluster (azul)', max(Cluster_medio))
+print('mínimo segundo cluster (azul)',min(Cluster_medio))
+Medio = H[((H['SalePrice']>(min(Cluster_medio))) & (H['SalePrice']<max(Cluster_medio)))]
+
+plt.scatter(X[normal == 2, -1], X[normal == 2, -1],s=100,c='green', label = "Cluster 3")
+Cluster_alto = X[normal == 2, -1]
+Cluster_alto = Cluster_alto.tolist()
+print('máximo tercer cluster (verde)', max(Cluster_medio))
+print('mínimo tercer cluster (verde)',min(Cluster_medio))
+Alto =  H[((H['SalePrice']>(min(Cluster_alto))) & (H['SalePrice']<max(Cluster_alto)))]
+
+plt.scatter(km.cluster_centers_[:,-1],km.cluster_centers_[:,-1], s=300, c="yellow",marker="*", label="Centroides")
+plt.title("Grupo casa")
+plt.xlabel("Precio de venta")
+plt.ylabel("Precio de venta")
+plt.legend()
